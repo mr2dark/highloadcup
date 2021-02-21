@@ -8,7 +8,7 @@ is an example of building a swagger-enabled Flask server.
 This example uses the [Connexion](https://github.com/zalando/connexion) library on top of Flask.
 
 ## Requirements
-Python 3.5.2+
+Python 3.6+
 
 ## Usage
 To run the server, please execute the following from the root directory:
@@ -21,13 +21,13 @@ python3 -m swagger_server
 and open your browser to here:
 
 ```
-http://localhost:8080/All-Cups/highloadcup/raw/main/goldrush/swagger.yaml/ui/
+http://localhost:8000/All-Cups/highloadcup/raw/main/goldrush/swagger.yaml/ui/
 ```
 
 Your Swagger definition lives here:
 
 ```
-http://localhost:8080/All-Cups/highloadcup/raw/main/goldrush/swagger.yaml/swagger.json
+http://localhost:8000/All-Cups/highloadcup/raw/main/goldrush/swagger.yaml/swagger.json
 ```
 
 To launch the integration tests, use tox:
@@ -45,5 +45,5 @@ To run the server on a Docker container, please execute the following from the r
 docker build -t swagger_server .
 
 # starting up a container
-docker run -p 8080:8080 swagger_server
+docker run -p 8000:8000 swagger_server
 ```
