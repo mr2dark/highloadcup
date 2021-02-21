@@ -53,7 +53,7 @@ class TestDefaultController(BaseTestCase):
 
         
         """
-        body = Area()
+        body = Area(pos_x=0, pos_y=0)
         response = self.client.open(
             '/All-Cups/highloadcup/raw/main/goldrush/swagger.yaml/explore',
             method='POST',
