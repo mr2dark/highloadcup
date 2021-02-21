@@ -156,9 +156,9 @@ class World:
         value = self._treasure_registry[treasure_uuid]
         start_coin = self._next_coin
         self._next_coin += value
-        self._coins.update(range(start_coin, self._next_coin))
+        wallet_coins = list(range(start_coin, self._next_coin))
+        self._coins.update(wallet_coins)
 
-        wallet_coins = list(take_no_more_from(self._coins, 1000))
         wallet = Wallet.from_dict(wallet_coins)
 
         del self._treasure_registry[treasure_uuid]
