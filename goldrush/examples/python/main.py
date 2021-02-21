@@ -7,12 +7,14 @@ from typing import Optional, List, Tuple
 
 from aiohttp import InvalidURL
 from yarl import URL
+import datetime as dt
+import time
 
 import aiohttp
 
 
 FORMAT = '%(asctime)-15s %(name)-12s %(levelname)-8s %(message)s'
-logging.basicConfig(level=logging.INFO, format=FORMAT)
+logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 logger = logging.getLogger(__name__)
 
 
@@ -95,12 +97,15 @@ class Client:
             return
 
     async def post_dig(self, dig: Dig) -> Optional[Treasure]:
-        logger.debug('dig')
+        # logger.debug('dig')
         url = self.base_url / 'dig'
         try:
+            start_ns = time.perf_counter_ns()
             async with self._client.post(url, json=asdict(dig)) as resp:
                 if resp.status == 200:
                     treasures = await resp.json()
+                    end_ns = time.perf_counter_ns()
+                    logger.debug('Dig to depth %d took %d ns', dig.depth, end_ns - start_ns)
                     return Treasure(priority=0, treasures=treasures)
                 elif resp.status == 403:
                     self.license.id = None
@@ -177,6 +182,8 @@ async def game(client: Client):
                             res = await client.post_cash(treasure)
                             if res:
                                 left -= 1
+                                if wallet := await client.get_balance():
+                                    logger.info('balance: %d', wallet.balance)
     except Exception as e:
         logger.error('error: %s', e)
     finally:
