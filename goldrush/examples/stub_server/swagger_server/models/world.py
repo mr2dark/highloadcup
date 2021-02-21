@@ -134,7 +134,7 @@ class World:
         value = int(self._treasure_map[x, y, depth - 1])
 
         self._active_licenses[license_id] -= 1
-        self._logger.info("Licenses state: %s", str(self._active_licenses))
+        self._logger.debug("Licenses state: %s", str(self._active_licenses))
         if self._active_licenses[license_id] <= 0:
             del self._active_licenses[license_id]
 
@@ -143,6 +143,7 @@ class World:
 
         treasure_uuid = str(uuid.uuid4())
         self._treasure_registry[treasure_uuid] = value
+        self._treasure_map[x, y, depth - 1] = 0
 
         treasure_list = TreasureList.from_dict([treasure_uuid])
 
