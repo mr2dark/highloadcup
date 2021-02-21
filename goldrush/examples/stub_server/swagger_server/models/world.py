@@ -128,7 +128,7 @@ class World:
 
         license_id = dig.license_id
         if license_id not in self._active_licenses:
-            raise wex.BadRequest()
+            raise wex.NotFound()
 
         self._depth_map[x, y] += 1
         value = int(self._treasure_map[x, y, depth - 1])
@@ -188,7 +188,7 @@ class World:
         if not coins:
             cur_time = time.time()
             if cur_time < self._next_free_license_after:
-                raise wex.BadRequest()
+                raise wex.NotFound()
 
             self._next_free_license_after = cur_time + 0.1
             return self._issue_new_license(3)
@@ -196,7 +196,7 @@ class World:
         coin = coins[0]
 
         if coin not in self._coins:
-            raise wex.BadRequest()
+            raise wex.NotFound()
 
         self._coins.remove(coin)
         return self._issue_new_license(5)
