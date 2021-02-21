@@ -1,0 +1,15 @@
+services:
+  stub_server:
+    build: ../stub_server
+    image: hlc21_stub_server
+    ports:
+      - "8000:8000"
+
+  client:
+    build: .
+    image: ${HLC21_CLIENT_IMAGE}
+    environment:
+      ADDRESS: stub_server
+    depends_on:
+      stub_server:
+        condition: service_healthy
