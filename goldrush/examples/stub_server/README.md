@@ -18,23 +18,37 @@ pip3 install -r requirements.txt
 python3 -m swagger_server
 ```
 
-and open your browser to here:
-
-```
-http://localhost:8000/All-Cups/highloadcup/raw/main/goldrush/swagger.yaml/ui/
-```
-
-Your Swagger definition lives here:
-
-```
-http://localhost:8000/All-Cups/highloadcup/raw/main/goldrush/swagger.yaml/swagger.json
-```
+Just pass to the client the follwing environment variable: `ADDRESS=localhost`.
 
 To launch the integration tests, use tox:
 ```
 sudo pip install tox
 tox
 ```
+
+## Configuring the stub server with environment variables
+
+There are the following environment variables which use can use to configure the stub server.
+
+### `SERVER_RUN_TIME_IN_SECONDS`
+Time in seconds after which the stub server will stop and print the final balance.
+For quick comparison tests it make sense to set it lower than default value, e.g. 2 minutes (`SERVER_RUN_TIME_IN_SECONDS=120`) 
+
+Default value:
+`SERVER_RUN_TIME_IN_SECONDS=600`
+
+### `DEFAULT_RATE_LIMIT`
+A string representing overall (considering requests to all endpoints) rate limit.
+This a configuration string for the `Flask-Limiter`. Please check 
+[Rate limit string notation](https://flask-limiter.readthedocs.io/en/stable/#rate-limit-string-notation) for other options.
+After the rate limit is reached, the server will return `429 Too Many Requests` response to requests until the request counter 
+is reset by the end of a second.
+
+Please note that the example Python client can struggle to achieve the request speed which will hit the default rate limit.
+Please consider using `300 per second` to test how a Python client code will react to rate limiting.
+
+Default value:
+`DEFAULT_RATE_LIMIT="1000 per second"`
 
 ## Running with Docker
 
@@ -44,6 +58,15 @@ To run the server on a Docker container, please execute the following from the r
 # building the image
 docker build -t hlc21_stub_server .
 
-# starting up a container
-docker run -p 8000:8000 hlc21_stub_server
+# starting up a container (with an environment variable value override)
+docker run --rm -it -e SERVER_RUN_TIME_IN_SECONDS=120 -p 0.0.0.0:8000:8000 hlc21_stub_server
+```
+
+## Running with Docker Compose
+
+There's an example Docker Compose file located in the sample client's folder: [docker-compose.yaml](../python/docker-compose.yaml).
+You can copy it to your client's folder, tailor it (adjust the client container image name and relative paths) and run 
+both the stub server and your client in one go using the following command:
+```bash
+docker compose down && docker compose build && docker compose up
 ```
