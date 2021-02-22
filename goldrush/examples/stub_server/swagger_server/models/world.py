@@ -62,6 +62,7 @@ class World:
         self._generate_treasure_map()
 
         self._treasure_registry = {}
+        self._treasure_503_registry = set()
         self._active_licenses = {}
         self._next_free_license_after = 0.
 
@@ -147,6 +148,9 @@ class World:
 
         treasure_uuid = str(uuid.uuid4())
         self._treasure_registry[treasure_uuid] = value
+        draw = self._rng.random()
+        if draw < 0.15:
+            self._treasure_503_registry.add(treasure_uuid)
         self._treasure_map[x, y, depth - 1] = 0
 
         treasure_list = TreasureList.from_dict([treasure_uuid])
@@ -157,6 +161,10 @@ class World:
         if treasure_uuid not in self._treasure_registry:
             self._logger.warning("Unknown treasure: %s", treasure_uuid)
             raise TreasureIsNotDiggedProblem()
+
+        if treasure_uuid in self._treasure_503_registry:
+            self._treasure_503_registry.remove(treasure_uuid)
+            raise wex.ServiceUnavailable()
 
         value = self._treasure_registry[treasure_uuid]
         start_coin = self._next_coin
