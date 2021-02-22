@@ -4,6 +4,8 @@ services:
     image: hlc21_stub_server
     ports:
       - "8000:8000"
+    environment:
+      DEFAULT_RATE_LIMIT: 1000 per second
 
   client:
     build: .

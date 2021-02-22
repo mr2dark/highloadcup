@@ -3,6 +3,7 @@ from typing import Optional
 import connexion
 import six
 import werkzeug.exceptions as wex
+import flask_limiter as flim
 
 from swagger_server.models.treasure import Treasure
 from swagger_server.models.area import Area  # noqa: E501
@@ -18,6 +19,7 @@ from swagger_server import util
 from swagger_server.models.world import World
 
 world: Optional[World] = None
+limiter: Optional[flim.Limiter] = None
 
 
 def cash(body):  # noqa: E501
