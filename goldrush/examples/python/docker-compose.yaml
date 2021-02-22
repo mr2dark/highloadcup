@@ -6,6 +6,7 @@ services:
       - "8000:8000"
     environment:
       DEFAULT_RATE_LIMIT: 1000 per second
+      SERVER_RUN_TIME_IN_SECONDS: 600
 
   client:
     build: .

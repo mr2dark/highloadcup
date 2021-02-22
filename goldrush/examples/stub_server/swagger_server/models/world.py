@@ -75,6 +75,10 @@ class World:
             "{}.{}".format(cls.__module__, cls.__qualname__)
         )
 
+    @property
+    def balance(self):
+        return self._balance
+
     def _generate_treasure_map(self):
         densities = (np.arange(10) + 1) * 0.01
         max_cash_size = (np.arange(10) + 1) * 10
