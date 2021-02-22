@@ -193,7 +193,8 @@ class World:
         if not coins:
             cur_time = time.time()
             if cur_time < self._next_free_license_after:
-                raise wex.NotFound()
+                draw = self._rng.random()
+                raise wex.BadGateway() if draw < 0.7 else wex.GatewayTimeout()
 
             self._next_free_license_after = cur_time + 0.1
             return self._issue_new_license(3)
