@@ -90,7 +90,7 @@ class World:
             layer = self._rng.random(self._map_size)
             layer = np.where(layer <= density, layer, 0.) / density
             layer *= max_cash_size[depth]
-            layers.append(layer.astype(int))
+            layers.append(layer.astype(np.int16))
 
         self._treasure_map = np.dstack(layers)
 
