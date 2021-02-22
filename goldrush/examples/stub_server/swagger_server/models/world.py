@@ -204,4 +204,5 @@ class World:
             raise wex.NotFound()
 
         self._coins.remove(coin)
+        self._balance -= 1
         return self._issue_new_license(5)
