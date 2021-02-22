@@ -26,7 +26,7 @@ def main():
     app.app.json_encoder = encoder.JSONEncoder
     app.add_api('swagger.yaml', arguments={'title': 'HighLoad Cup 2021'}, pythonic_params=True)
 
-    ctrl.limiter = flim.Limiter(app.app, default_limits=[rate_limit], key_func=lambda: 0)
+    ctrl.limiter = flim.Limiter(app.app, default_limits=[rate_limit], key_func=lambda: 1)
 
     signal.signal(signal.SIGALRM, kill_handler)
     signal.alarm(run_time)
