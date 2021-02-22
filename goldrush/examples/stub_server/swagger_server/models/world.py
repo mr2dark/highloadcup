@@ -196,7 +196,7 @@ class World:
                 draw = self._rng.random()
                 raise wex.BadGateway() if draw < 0.7 else wex.GatewayTimeout()
 
-            self._next_free_license_after = cur_time + 0.1
+            self._next_free_license_after = cur_time + 0.05
             return self._issue_new_license(3)
 
         coin = coins[0]
