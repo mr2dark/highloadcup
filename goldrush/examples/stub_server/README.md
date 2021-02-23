@@ -18,7 +18,12 @@ pip3 install -r requirements.txt
 python3 -m swagger_server
 ```
 
-Just pass to the client the follwing environment variable: `ADDRESS=localhost`.
+Just pass to the client the following environment variable: `ADDRESS=localhost`.
+
+You can specify [server configuration environment variable](#configuring-the-stub-server-with-environment-variables) values in shell's command line like in the example below:
+```
+DEFAULT_RATE_LIMIT="300 per second" SERVER_RUN_TIME_IN_SECONDS=120 python3 -m swagger_server
+```
 
 To launch the integration tests, use tox:
 ```
