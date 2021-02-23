@@ -85,16 +85,16 @@ class World:
         self._stats = ClientStats()
 
     def get_world_report(self):
-        total_cells_per_level = WIDTH * HEIGHT
-        total_cells = total_cells_per_level * DEPTH
         with_treasure = (self._treasure_map > 0)
+        total_treasures = with_treasure.sum()
+        total_treasure_value = self._treasure_map.sum()
         outlines = [
             "",
             "*** WORLD REPORT ***",
             f"Configuration:\t{WIDTH} x {HEIGHT} x {DEPTH}",
-            f"Total treasures:\t{int(with_treasure.sum())}",
-            f"Total treasure value:\t{int(self._treasure_map.sum())}",
-            f"Avg treasure value:\t{self._treasure_map.sum() / with_treasure.sum():.2f}",
+            f"Total treasures:\t{int(total_treasures)}",
+            f"Total treasure value:\t{int(total_treasure_value)}",
+            f"Avg treasure value:\t{total_treasure_value / total_treasures :.2f}",
             f"Treasure density:\t{with_treasure.mean():.5f}",
             f"Treasure value density:\t{self._treasure_map.mean():.5f}",
             "* LAYER STATS *",
@@ -131,15 +131,26 @@ class World:
             f"Paid licenses issued:\t{self._stats.paid_licenses_issued}",
             f"Single cell explores done:\t{self._stats.single_cell_explores_done}",
             f"Single cell explores with treasures found:\t{self._stats.single_cell_explores_nonzero}",
-            f"Single cell explore treasure found rate:\t"
-            f"{self._stats.single_cell_explores_nonzero / self._stats.single_cell_explores_done:.5f}",
-            f"Dig done:\t{self._stats.digs_done}",
-            f"Dig success rate:\t{self._stats.treasures_found / self._stats.digs_done:.5f}",
+            f"Single cell explore treasure found rate:\t" +
+            (
+                f"{self._stats.single_cell_explores_nonzero / self._stats.single_cell_explores_done:.5f}"
+                if self._stats.single_cell_explores_done else "N/A"
+            ),
+            f"Digs done:\t{self._stats.digs_done}",
+            f"Dig success rate:\t" +
+            (
+                f"{self._stats.treasures_found / self._stats.digs_done:.5f}"
+                if self._stats.digs_done else "N/A"
+            ),
             f"Treasures found:\t{self._stats.treasures_found}",
             f"Total found treasure value:\t{self._stats.total_found_treasure_value}",
             f"Treasures exchanged:\t{self._stats.treasures_exchanged}",
             f"Total exchanged treasure value:\t{self._stats.total_exchanged_treasure_value}",
-            f"Treasure exchange efficiency:\t{self._stats.treasures_exchanged / self._stats.treasures_found:.5f}",
+            f"Treasure exchange efficiency:\t" +
+            (
+                f"{self._stats.treasures_exchanged / self._stats.treasures_found:.5f}"
+                if self._stats.treasures_found else "N/A"
+            ),
             f"Treasures not exchanged:\t{len(self._treasure_registry)}",
         ]
         return "\n".join(outlines)
