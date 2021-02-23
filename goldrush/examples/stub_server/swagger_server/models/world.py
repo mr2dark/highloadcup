@@ -42,6 +42,18 @@ class NoTreasureProblem(cex.ProblemException, wex.BadRequest):
         super().__init__(404, title, detail, typ, instance, headers)
 
 
+class ClientStats:
+    free_licenses_issued: int = 0
+    paid_licenses_issued: int = 0
+    single_cell_explores_done: int = 0
+    single_cell_explores_nonzero: int = 0
+    digs_done: int = 0
+    treasures_found: int = 0
+    treasures_exchanged: int = 0
+    total_found_treasure_value: int = 0
+    total_exchanged_treasure_value: int = 0
+
+
 def take_no_more_from(iterable, left=1000):
     for item in iterable:
         if not left:
@@ -69,6 +81,68 @@ class World:
         self._balance = 0
         self._coins = set()
         self._next_coin = 0
+
+        self._stats = ClientStats()
+
+    def get_world_report(self):
+        total_cells_per_level = WIDTH * HEIGHT
+        total_cells = total_cells_per_level * DEPTH
+        with_treasure = (self._treasure_map > 0)
+        outlines = [
+            "",
+            "*** WORLD REPORT ***",
+            f"Configuration:\t{WIDTH} x {HEIGHT} x {DEPTH}",
+            f"Total treasures:\t{int(with_treasure.sum())}",
+            f"Total treasure value:\t{int(self._treasure_map.sum())}",
+            f"Avg treasure value:\t{self._treasure_map.sum() / with_treasure.sum():.2f}",
+            f"Treasure density:\t{with_treasure.mean():.5f}",
+            f"Treasure value density:\t{self._treasure_map.mean():.5f}",
+            "* LAYER STATS *",
+        ]
+        layer_stats_titles = [
+            "Layer#",
+            "Tot.treas",
+            "Tot.treas.val",
+            "Avg.treas.val",
+            "Treas.dens",
+            "Treas.val.dens"
+        ]
+        outlines.append("\t".join(layer_stats_titles))
+        col_widths = list(map(len, layer_stats_titles))
+        for i in range(DEPTH):
+            layer = self._treasure_map[:, :, i]
+            layer_with_treasure = (layer > 0)
+            outlines.append("\t".join([
+                f"{i + 1:{col_widths[0]}d}",
+                f"{int(layer_with_treasure.sum()):{col_widths[1]}d}",
+                f"{int(layer.sum()):{col_widths[2]}d}",
+                f"{layer.sum() / layer_with_treasure.sum():{col_widths[3]}.2f}",
+                f"{layer_with_treasure.mean():{col_widths[4]}.5f}",
+                f"{layer.mean():{col_widths[5]}.5f}",
+            ]))
+        return "\n".join(outlines)
+
+    def get_client_report(self):
+        outlines = [
+            "*** CLIENT REPORT ***",
+            f"Balance:\t{self._balance}",
+            f"Licenses active:\t{len(self._active_licenses)}",
+            f"Free licenses issued:\t{self._stats.free_licenses_issued}",
+            f"Paid licenses issued:\t{self._stats.paid_licenses_issued}",
+            f"Single cell explores done:\t{self._stats.single_cell_explores_done}",
+            f"Single cell explores with treasures found:\t{self._stats.single_cell_explores_nonzero}",
+            f"Single cell explore treasure found rate:\t"
+            f"{self._stats.single_cell_explores_nonzero / self._stats.single_cell_explores_done:.5f}",
+            f"Dig done:\t{self._stats.digs_done}",
+            f"Dig success rate:\t{self._stats.treasures_found / self._stats.digs_done:.5f}",
+            f"Treasures found:\t{self._stats.treasures_found}",
+            f"Total found treasure value:\t{self._stats.total_found_treasure_value}",
+            f"Treasures exchanged:\t{self._stats.treasures_exchanged}",
+            f"Total exchanged treasure value:\t{self._stats.total_exchanged_treasure_value}",
+            f"Treasure exchange efficiency:\t{self._stats.treasures_exchanged / self._stats.treasures_found:.5f}",
+            f"Treasures not exchanged:\t{len(self._treasure_registry)}",
+        ]
+        return "\n".join(outlines)
 
     @classmethod
     def _get_logger(cls) -> logging.Logger:
@@ -116,6 +190,10 @@ class World:
         with_treasure = cube > 0
 
         amount = int(with_treasure.sum())
+        if area.size_x * area.size_y == 1:
+            self._stats.single_cell_explores_done += 1
+            if amount:
+                self._stats.single_cell_explores_nonzero += 1
         return Report(area=area, amount=Amount.from_dict(amount))
 
     def dig(self, dig: Dig):
@@ -135,6 +213,8 @@ class World:
         if license_id not in self._active_licenses:
             raise wex.NotFound()
 
+        self._stats.digs_done += 1
+
         self._depth_map[x, y] += 1
         value = int(self._treasure_map[x, y, depth - 1])
 
@@ -145,6 +225,9 @@ class World:
 
         if not value:
             raise NoTreasureProblem()
+
+        self._stats.treasures_found += 1
+        self._stats.total_found_treasure_value += value
 
         treasure_uuid = str(uuid.uuid4())
         self._treasure_registry[treasure_uuid] = value
@@ -176,6 +259,8 @@ class World:
 
         del self._treasure_registry[treasure_uuid]
         self._balance += value
+        self._stats.treasures_exchanged += 1
+        self._stats.total_exchanged_treasure_value += value
 
         return wallet
 
@@ -206,6 +291,7 @@ class World:
                 raise error
 
             self._next_free_license_after = cur_time + 0.05
+            self._stats.free_licenses_issued += 1
             return self._issue_new_license(3)
 
         coin = coins[0]
@@ -215,4 +301,5 @@ class World:
 
         self._coins.remove(coin)
         self._balance -= 1
+        self._stats.paid_licenses_issued += 1
         return self._issue_new_license(5)

@@ -18,7 +18,8 @@ logger.setLevel(logging.INFO)
 
 
 def kill_handler(_signum, _frame):
-    print(f"Final balance: {ctrl.world.balance}", flush=True)
+    print(ctrl.world.get_client_report(), flush=True)
+    print(ctrl.world.get_world_report(), flush=True)
     sys.exit(0)
 
 
@@ -39,6 +40,8 @@ def main():
     signal.alarm(run_time)
 
     logger.info("Server will run for %d seconds", run_time)
+
+    logger.info(ctrl.world.get_world_report())
 
     try:
         app.run(port=8000)
