@@ -50,6 +50,13 @@ Please consider using `300 per second` to test how a Python client code will rea
 Default value:
 `DEFAULT_RATE_LIMIT="1000 per second"`
 
+### `SERVER_SEED`
+A seed for the stub server's random number generator. Used primarily for treasure map generation.
+Also accounts for some random effects like `50x` errors. 
+
+Default value:
+`SERVER_SEED=0`
+
 ## Running with Docker
 
 To run the server on a Docker container, please execute the following from the root directory:

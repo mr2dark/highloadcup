@@ -24,7 +24,7 @@ def kill_handler(_signum, _frame):
 
 
 def main():
-    seed = 0
+    seed = int(os.getenv("SERVER_SEED", 0))
     rate_limit = os.getenv("DEFAULT_RATE_LIMIT", "1000 per second")
     run_time = int(os.getenv("SERVER_RUN_TIME_IN_SECONDS", 600))
 
