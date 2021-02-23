@@ -218,10 +218,13 @@ class World:
         self._depth_map[x, y] += 1
         value = int(self._treasure_map[x, y, depth - 1])
 
-        self._active_licenses[license_id] -= 1
+        license_params = self._active_licenses[license_id]
+        license_params[0] += 1
         self._logger.debug("Licenses state: %s", str(self._active_licenses))
-        if self._active_licenses[license_id] <= 0:
+        if license_params[0] >= license_params[1]:
             del self._active_licenses[license_id]
+
+        del license_params
 
         if not value:
             raise NoTreasureProblem()
@@ -265,7 +268,10 @@ class World:
         return wallet
 
     def get_license_list(self):
-        return LicenseList.from_dict(list(self._active_licenses.keys()))
+        return LicenseList.from_dict([
+            License(id=license_id, dig_allowed=Amount.from_dict(dig_allowed), dig_used=Amount.from_dict(dig_used))
+            for license_id, (dig_used, dig_allowed) in self._active_licenses.items()
+        ])
 
     def report_balance(self):
         wallet_coins = list(take_no_more_from(self._coins, 1000))
@@ -275,7 +281,7 @@ class World:
     def _issue_new_license(self, dig_allowed):
         license_id = max(self._active_licenses.keys(), default=0) + 1
 
-        self._active_licenses[license_id] = dig_allowed
+        self._active_licenses[license_id] = [0, dig_allowed]
 
         return License(id=license_id, dig_allowed=Amount.from_dict(dig_allowed), dig_used=Amount.from_dict(0))
 
