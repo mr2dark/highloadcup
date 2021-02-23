@@ -202,7 +202,8 @@ class World:
             cur_time = time.time()
             if cur_time < self._next_free_license_after:
                 draw = self._rng.random()
-                raise wex.BadGateway() if draw < 0.7 else wex.GatewayTimeout()
+                error = wex.BadGateway() if draw < 0.7 else wex.GatewayTimeout()
+                raise error
 
             self._next_free_license_after = cur_time + 0.05
             return self._issue_new_license(3)
