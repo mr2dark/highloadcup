@@ -41,6 +41,7 @@ class NoTreasureProblem(cex.ProblemException, wex.BadRequest):
     def __init__(self, title=None, detail=None, typ=None, instance=None, headers=None):
         super().__init__(404, title, detail, typ, instance, headers)
 
+
 class WrongLicenseProblem(cex.ProblemException, wex.BadRequest):
     def __init__(self, title=None, detail=None, typ=None, instance=None, headers=None):
         super().__init__(403, title, detail, typ, instance, headers)
