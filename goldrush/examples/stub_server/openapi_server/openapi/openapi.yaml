@@ -1,6 +1,5 @@
 openapi: 3.0.1
 info:
-  title: HighLoad Cup 2021
   description: |
     ## Usage
     ## List of all custom errors
@@ -9,208 +8,242 @@ info:
     - 422.1001: wrong depth
     - 409.1002: no more active licenses allowed
     - 409.1003: treasure is not digged
+  title: HighLoad Cup 2021
   version: 1.0.0
 servers:
 - url: /
 paths:
-  /health-check:
-    get:
-      description: Returns 200 if service works okay.
-      operationId: health_check
-      responses:
-        "200":
-          description: Extra details about service status, if any.
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-                x-content-type: application/json
-        default:
-          description: General errors using same model as used by go-swagger for validation
-            errors.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-      x-openapi-router-controller: swagger_server.controllers.default_controller
   /balance:
     get:
       description: Returns a current balance.
       operationId: get_balance
       responses:
         "200":
-          description: Current balance.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/balance'
+          description: Current balance.
         default:
-          description: General errors using same model as used by go-swagger for validation
-            errors.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-      x-openapi-router-controller: swagger_server.controllers.default_controller
+          description: General errors using same model as used by go-swagger for validation
+            errors.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /cash:
+    post:
+      description: Exchange provided treasure for money.
+      operationId: cash
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/treasure'
+        description: Treasure for exchange.
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/wallet'
+          description: Payment for treasure.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+          description: |
+            - 409.1003: treasure is not digged
+      x-codegen-request-body-name: args
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /dig:
+    post:
+      description: Dig at given point and depth, returns found treasures.
+      operationId: dig
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dig'
+        description: License, place and depth to dig.
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/treasureList'
+          description: List of treasures found.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+          description: |
+            - 422.1000: wrong coordinates
+            - 422.1001: wrong depth
+      x-codegen-request-body-name: args
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /explore:
+    post:
+      description: Returns amount of treasures in the provided area at full depth.
+      operationId: explore_area
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/area'
+        description: Area to be explored.
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/report'
+          description: Report about found treasures.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+          description: |
+            - 422.1000: wrong coordinates
+      x-codegen-request-body-name: args
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /health-check:
+    get:
+      description: Returns 200 if service works okay.
+      operationId: health_check
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: object
+                type: object
+          description: Extra details about service status, if any.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+          description: General errors using same model as used by go-swagger for validation
+            errors.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /licenses:
     get:
       description: Returns a list of issued licenses.
       operationId: list_licenses
       responses:
         "200":
-          description: List of issued licenses.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/licenseList'
+          description: List of issued licenses.
         default:
-          description: General errors using same model as used by go-swagger for validation
-            errors.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-      x-openapi-router-controller: swagger_server.controllers.default_controller
+          description: General errors using same model as used by go-swagger for validation
+            errors.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
     post:
       description: Issue a new license.
       operationId: issue_license
       requestBody:
-        description: Amount of money to spend for a license. Empty array for get free
-          license. Maximum 10 active licenses
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/wallet'
+        description: Amount of money to spend for a license. Empty array for get free
+          license. Maximum 10 active licenses
         required: false
       responses:
         "200":
-          description: Issued license.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/license'
+          description: Issued license.
         default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
           description: |
             - 409.1002: no more active licenses allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
       x-codegen-request-body-name: args
-      x-openapi-router-controller: swagger_server.controllers.default_controller
-  /explore:
-    post:
-      description: Returns amount of treasures in the provided area at full depth.
-      operationId: explore_area
-      requestBody:
-        description: Area to be explored.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/area'
-        required: true
-      responses:
-        "200":
-          description: Report about found treasures.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/report'
-        default:
-          description: |
-            - 422.1000: wrong coordinates
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-      x-codegen-request-body-name: args
-      x-openapi-router-controller: swagger_server.controllers.default_controller
-  /dig:
-    post:
-      description: Dig at given point and depth, returns found treasures.
-      operationId: dig
-      requestBody:
-        description: License, place and depth to dig.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/dig'
-        required: true
-      responses:
-        "200":
-          description: List of treasures found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/treasureList'
-        default:
-          description: |
-            - 422.1000: wrong coordinates
-            - 422.1001: wrong depth
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-      x-codegen-request-body-name: args
-      x-openapi-router-controller: swagger_server.controllers.default_controller
-  /cash:
-    post:
-      description: Exchange provided treasure for money.
-      operationId: cash
-      requestBody:
-        description: Treasure for exchange.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/treasure'
-        required: true
-      responses:
-        "200":
-          description: Payment for treasure.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/wallet'
-        default:
-          description: |
-            - 409.1003: treasure is not digged
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-      x-codegen-request-body-name: args
-      x-openapi-router-controller: swagger_server.controllers.default_controller
+      x-openapi-router-controller: openapi_server.controllers.default_controller
 components:
+  responses:
+    balance:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/balance'
+      description: Current balance.
+    cash:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/wallet'
+      description: Payment for treasure.
+    dig:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/treasureList'
+      description: List of treasures found.
+    error:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+      description: General errors using same model as used by go-swagger for validation
+        errors.
+    explore:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/report'
+      description: Report about found treasures.
+    license:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/license'
+      description: Issued license.
+    licenseList:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/licenseList'
+      description: List of issued licenses.
   schemas:
     error:
+      description: |
+        This model should match output of errors returned by go-swagger
+        (like failed validation), to ensure our handlers use same format.
+      properties:
+        code:
+          description: Either same as HTTP Status Code OR >= 600 with HTTP Status
+            Code 422
+          format: int32
+          type: integer
+        message:
+          type: string
       required:
       - code
       - message
       type: object
-      properties:
-        code:
-          type: integer
-          description: Either same as HTTP Status Code OR >= 600 with HTTP Status
-            Code 422
-          format: int32
-        message:
-          type: string
-      description: |
-        This model should match output of errors returned by go-swagger
-        (like failed validation), to ensure our handlers use same format.
     balance:
-      required:
-      - balance
-      - wallet
-      type: object
-      properties:
-        balance:
-          type: integer
-          format: uint32
-        wallet:
-          $ref: '#/components/schemas/wallet'
       description: Current balance and wallet with up to 1000 coins.
       example:
         wallet:
@@ -219,1042 +252,68 @@ components:
         - 6
         - 6
         - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
-        - 6
         balance: 0
+      properties:
+        balance:
+          format: uint32
+          type: integer
+        wallet:
+          description: Wallet with some coins.
+          items:
+            format: uint32
+            type: integer
+          maxItems: 1000
+          type: array
+          uniqueItems: true
+      required:
+      - balance
+      - wallet
+      type: object
     wallet:
-      maxItems: 1000
-      uniqueItems: true
-      type: array
       description: Wallet with some coins.
       items:
-        type: integer
         format: uint32
+        type: integer
+      maxItems: 1000
+      type: array
+      uniqueItems: true
     amount:
+      description: Non-negative amount of treasures/etc.
       minimum: 0
       type: integer
-      description: Non-negative amount of treasures/etc.
     license:
+      description: License for digging.
+      example:
+        digUsed: 0
+        digAllowed: 0
+        id: 0
+      properties:
+        id:
+          type: integer
+        digAllowed:
+          description: Non-negative amount of treasures/etc.
+          minimum: 0
+          type: integer
+        digUsed:
+          description: Non-negative amount of treasures/etc.
+          minimum: 0
+          type: integer
       required:
       - digAllowed
       - digUsed
       - id
       type: object
-      properties:
-        id:
-          type: integer
-        digAllowed:
-          $ref: '#/components/schemas/amount'
-        digUsed:
-          $ref: '#/components/schemas/amount'
-      description: License for digging.
-      example:
-        digUsed: null
-        digAllowed: 0
-        id: 0
     licenseList:
-      type: array
       description: List of issued licenses.
       items:
         $ref: '#/components/schemas/license'
+      type: array
     area:
-      required:
-      - posX
-      - posY
-      type: object
+      example:
+        posX: 0
+        posY: 0
+        sizeX: 1
+        sizeY: 1
       properties:
         posX:
           minimum: 0
@@ -1268,21 +327,11 @@ components:
         sizeY:
           minimum: 1
           type: integer
-      example:
-        posX: 0
-        posY: 0
-        sizeX: 1
-        sizeY: 1
-    report:
       required:
-      - amount
-      - area
+      - posX
+      - posY
       type: object
-      properties:
-        area:
-          $ref: '#/components/schemas/area'
-        amount:
-          $ref: '#/components/schemas/amount'
+    report:
       example:
         area:
           posX: 0
@@ -1290,17 +339,22 @@ components:
           sizeX: 1
           sizeY: 1
         amount: 0
-    dig:
+      properties:
+        area:
+          $ref: '#/components/schemas/area'
+        amount:
+          description: Non-negative amount of treasures/etc.
+          minimum: 0
+          type: integer
       required:
-      - depth
-      - licenseID
-      - posX
-      - posY
+      - amount
+      - area
       type: object
+    dig:
       properties:
         licenseID:
-          type: integer
           description: ID of the license this request is attached to.
+          type: integer
         posX:
           minimum: 0
           type: integer
@@ -1308,60 +362,21 @@ components:
           minimum: 0
           type: integer
         depth:
-          maximum: 100.0
+          maximum: 1E+2
           minimum: 1
           type: integer
+      required:
+      - depth
+      - licenseID
+      - posX
+      - posY
+      type: object
     treasure:
-      type: string
       description: Treasure ID.
+      type: string
     treasureList:
-      type: array
       description: List of treasures.
       items:
         $ref: '#/components/schemas/treasure'
-  responses:
-    balance:
-      description: Current balance.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/balance'
-    cash:
-      description: Payment for treasure.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/wallet'
-    dig:
-      description: List of treasures found.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/treasureList'
-    error:
-      description: General errors using same model as used by go-swagger for validation
-        errors.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/error'
-    explore:
-      description: Report about found treasures.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/report'
-    license:
-      description: Issued license.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/license'
-    licenseList:
-      description: List of issued licenses.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/licenseList'
+      type: array
 x-original-swagger-version: "2.0"
-
