@@ -42,6 +42,11 @@ class NoTreasureProblem(cex.ProblemException, wex.BadRequest):
         super().__init__(404, title, detail, typ, instance, headers)
 
 
+class WrongLicenseProblem(cex.ProblemException, wex.BadRequest):
+    def __init__(self, title=None, detail=None, typ=None, instance=None, headers=None):
+        super().__init__(403, title, detail, typ, instance, headers)
+
+
 class ClientStats:
     free_licenses_issued: int = 0
     paid_licenses_issued: int = 0
@@ -222,7 +227,7 @@ class World:
 
         license_id = dig.license_id
         if license_id not in self._active_licenses:
-            raise wex.NotFound()
+            raise WrongLicenseProblem()
 
         self._stats.digs_done += 1
 
