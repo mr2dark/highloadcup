@@ -34,7 +34,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-      x-openapi-router-controller: swagger_server.controllers.default_controller
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /balance:
     get:
       description: Returns a current balance.
@@ -53,7 +53,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-      x-openapi-router-controller: swagger_server.controllers.default_controller
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /licenses:
     get:
       description: Returns a list of issued licenses.
@@ -72,7 +72,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-      x-openapi-router-controller: swagger_server.controllers.default_controller
+      x-openapi-router-controller: openapi_server.controllers.default_controller
     post:
       description: Issue a new license.
       operationId: issue_license
@@ -99,7 +99,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
       x-codegen-request-body-name: args
-      x-openapi-router-controller: swagger_server.controllers.default_controller
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /explore:
     post:
       description: Returns amount of treasures in the provided area at full depth.
@@ -126,7 +126,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
       x-codegen-request-body-name: args
-      x-openapi-router-controller: swagger_server.controllers.default_controller
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /dig:
     post:
       description: Dig at given point and depth, returns found treasures.
@@ -154,7 +154,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
       x-codegen-request-body-name: args
-      x-openapi-router-controller: swagger_server.controllers.default_controller
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /cash:
     post:
       description: Exchange provided treasure for money.
@@ -181,7 +181,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
       x-codegen-request-body-name: args
-      x-openapi-router-controller: swagger_server.controllers.default_controller
+      x-openapi-router-controller: openapi_server.controllers.default_controller
 components:
   schemas:
     error:

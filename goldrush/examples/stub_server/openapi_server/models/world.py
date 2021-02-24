@@ -5,8 +5,7 @@ from typing import List
 
 import numpy as np
 
-from openapi_server.models import Area, Dig, TreasureList, Report, Amount, Wallet, Balance, LicenseList, \
-    License
+from openapi_server.models import Area, Dig, Report, Balance, License
 import connexion.exceptions as cex
 import werkzeug.exceptions as wex
 
@@ -210,7 +209,7 @@ class World:
             self._stats.single_cell_explores_done += 1
             if amount:
                 self._stats.single_cell_explores_nonzero += 1
-        return Report(area=area, amount=Amount.from_dict(amount))
+        return Report(area=area, amount=amount)
 
     def dig(self, dig: Dig):
         x = dig.pos_x
@@ -255,7 +254,7 @@ class World:
             self._treasure_503_registry.add(treasure_uuid)
         self._treasure_map[x, y, depth - 1] = 0
 
-        treasure_list = TreasureList.from_dict([treasure_uuid])
+        treasure_list = [treasure_uuid]
 
         return treasure_list
 
@@ -274,7 +273,7 @@ class World:
         wallet_coins = list(range(start_coin, self._next_coin))
         self._coins.update(wallet_coins)
 
-        wallet = Wallet.from_dict(wallet_coins)
+        wallet = wallet_coins
 
         del self._treasure_registry[treasure_uuid]
         self._balance += value
@@ -284,22 +283,21 @@ class World:
         return wallet
 
     def get_license_list(self):
-        return LicenseList.from_dict([
-            License(id=license_id, dig_allowed=Amount.from_dict(dig_allowed), dig_used=Amount.from_dict(dig_used))
+        return [
+            License(id=license_id, dig_allowed=dig_allowed, dig_used=dig_used)
             for license_id, (dig_used, dig_allowed) in self._active_licenses.items()
-        ])
+        ]
 
     def report_balance(self):
         wallet_coins = list(take_no_more_from(self._coins, 1000))
-        wallet = Wallet.from_dict(wallet_coins)
-        return Balance(balance=self._balance, wallet=wallet)
+        return Balance(balance=self._balance, wallet=wallet_coins)
 
     def _issue_new_license(self, dig_allowed):
         license_id = max(self._active_licenses.keys(), default=0) + 1
 
         self._active_licenses[license_id] = [0, dig_allowed]
 
-        return License(id=license_id, dig_allowed=Amount.from_dict(dig_allowed), dig_used=Amount.from_dict(0))
+        return License(id=license_id, dig_allowed=dig_allowed, dig_used=0)
 
     def issue_license(self, coins: List[int]):
         if len(self._active_licenses) >= MAX_LICENSES:

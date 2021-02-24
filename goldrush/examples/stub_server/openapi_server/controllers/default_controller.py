@@ -5,18 +5,14 @@ import six
 import werkzeug.exceptions as wex
 import flask_limiter as flim
 
-from swagger_server.models.treasure import Treasure
-from swagger_server.models.area import Area  # noqa: E501
-from swagger_server.models.balance import Balance  # noqa: E501
-from swagger_server.models.dig import Dig  # noqa: E501
-from swagger_server.models.error import Error  # noqa: E501
-from swagger_server.models.license import License  # noqa: E501
-from swagger_server.models.license_list import LicenseList  # noqa: E501
-from swagger_server.models.report import Report  # noqa: E501
-from swagger_server.models.treasure_list import TreasureList  # noqa: E501
-from swagger_server.models.wallet import Wallet  # noqa: E501
-from swagger_server import util
-from swagger_server.models.world import World
+from openapi_server.models.area import Area  # noqa: E501
+from openapi_server.models.balance import Balance  # noqa: E501
+from openapi_server.models.dig import Dig  # noqa: E501
+from openapi_server.models.error import Error  # noqa: E501
+from openapi_server.models.license import License  # noqa: E501
+from openapi_server.models.report import Report  # noqa: E501
+from openapi_server import util
+from openapi_server.models.world import World
 
 world: Optional[World] = None
 limiter: Optional[flim.Limiter] = None
@@ -30,7 +26,7 @@ def cash(body):  # noqa: E501
     :param body: Treasure for exchange.
     :type body: dict | bytes
 
-    :rtype: Wallet
+    :rtype: List[int]
     """
     if connexion.request.is_json:
         body = connexion.request.get_json()  # noqa: E501
@@ -45,7 +41,7 @@ def dig(body):  # noqa: E501
     :param body: License, place and depth to dig.
     :type body: dict | bytes
 
-    :rtype: TreasureList
+    :rtype: List[str]
     """
     if connexion.request.is_json:
         body = Dig.from_dict(connexion.request.get_json())  # noqa: E501
@@ -110,6 +106,6 @@ def list_licenses():  # noqa: E501
     Returns a list of issued licenses. # noqa: E501
 
 
-    :rtype: LicenseList
+    :rtype: List[License]
     """
     return world.get_license_list()

@@ -1,4 +1,4 @@
-FROM python:3.6-slim
+FROM python:3.8-slim
 
 RUN apt-get update --fix-missing -y \
     && apt-get install -y --no-install-recommends \
@@ -19,7 +19,7 @@ EXPOSE 8000
 
 ENTRYPOINT ["python3"]
 
-CMD ["-m", "swagger_server"]
+CMD ["-m", "openapi_server"]
 
 HEALTHCHECK --interval=5s --timeout=3s --start-period=15s \
   CMD curl -f http://localhost:8000/health-check || exit 1

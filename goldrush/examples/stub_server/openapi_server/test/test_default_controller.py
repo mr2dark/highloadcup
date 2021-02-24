@@ -5,16 +5,16 @@ from __future__ import absolute_import
 from flask import json
 from six import BytesIO
 
-from swagger_server.models.area import Area  # noqa: E501
-from swagger_server.models.balance import Balance  # noqa: E501
-from swagger_server.models.dig import Dig  # noqa: E501
-from swagger_server.models.error import Error  # noqa: E501
-from swagger_server.models.license import License  # noqa: E501
-from swagger_server.models.license_list import LicenseList  # noqa: E501
-from swagger_server.models.report import Report  # noqa: E501
-from swagger_server.models.treasure_list import TreasureList  # noqa: E501
-from swagger_server.models.wallet import Wallet  # noqa: E501
-from swagger_server.test import BaseTestCase
+from openapi_server.models.area import Area  # noqa: E501
+from openapi_server.models.balance import Balance  # noqa: E501
+from openapi_server.models.dig import Dig  # noqa: E501
+from openapi_server.models.error import Error  # noqa: E501
+from openapi_server.models.license import License  # noqa: E501
+from openapi_server.models.license_list import LicenseList  # noqa: E501
+from openapi_server.models.report import Report  # noqa: E501
+from openapi_server.models.treasure_list import TreasureList  # noqa: E501
+from openapi_server.models.wallet import Wallet  # noqa: E501
+from openapi_server.test import BaseTestCase
 
 
 class TestDefaultController(BaseTestCase):

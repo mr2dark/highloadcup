@@ -8,9 +8,9 @@ import connexion
 import flask_limiter as flim
 import flask.logging as flog
 
-from swagger_server import encoder
-import swagger_server.controllers.default_controller as ctrl
-from swagger_server.models.world import World
+from openapi_server import encoder
+import openapi_server.controllers.default_controller as ctrl
+from openapi_server.models.world import World
 
 logger = logging.getLogger(__name__)
 logger.addHandler(flog.default_handler)
@@ -29,9 +29,9 @@ def main():
     run_time = int(os.getenv("SERVER_RUN_TIME_IN_SECONDS", 600))
 
     ctrl.world = World(seed)
-    app = connexion.App(__name__, specification_dir='./swagger/')
+    app = connexion.App(__name__, specification_dir='./openapi/')
     app.app.json_encoder = encoder.JSONEncoder
-    app.add_api('swagger.yaml', arguments={'title': 'HighLoad Cup 2021'}, pythonic_params=True)
+    app.add_api('openapi.yaml', arguments={'title': 'HighLoad Cup 2021'}, pythonic_params=True)
 
     ctrl.limiter = flim.Limiter(app.app, default_limits=[rate_limit], key_func=lambda: 1)
     logger.info("Rate limit set to %s", rate_limit)
