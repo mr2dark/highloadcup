@@ -18,18 +18,6 @@ pip3 install -r requirements.txt
 python3 -m openapi_server
 ```
 
-and open your browser to here:
-
-```
-http://localhost:8080/ui/
-```
-
-Your OpenAPI definition lives here:
-
-```
-http://localhost:8080/openapi.json
-```
-
 Just pass to the client the following environment variable: `ADDRESS=localhost`.
 
 You can specify [server configuration environment variable](#configuring-the-stub-server-with-environment-variables) values in shell's command line like in the example below:
@@ -41,6 +29,18 @@ To launch the integration tests, use tox:
 ```
 sudo pip install tox
 tox
+```
+
+You can browse API definition here:
+
+```
+http://localhost:8000/ui/
+```
+
+Your OpenAPI definition lives here:
+
+```
+http://localhost:8000/openapi.json
 ```
 
 ## Configuring the stub server with environment variables
