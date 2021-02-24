@@ -5,7 +5,7 @@ from typing import List
 
 import numpy as np
 
-from swagger_server.models import Area, Dig, TreasureList, Report, Amount, Wallet, Balance, LicenseList, \
+from openapi_server.models import Area, Dig, TreasureList, Report, Amount, Wallet, Balance, LicenseList, \
     License
 import connexion.exceptions as cex
 import werkzeug.exceptions as wex
