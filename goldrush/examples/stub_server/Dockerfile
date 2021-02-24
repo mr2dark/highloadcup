@@ -17,9 +17,10 @@ COPY . /usr/src/app
 
 EXPOSE 8000
 
-ENTRYPOINT ["python3"]
-
-CMD ["-m", "openapi_server"]
+CMD gunicorn --worker-class gevent \
+  --workers 1 \
+  --bind 0.0.0.0:8000 \
+  openapi_server:app
 
 HEALTHCHECK --interval=5s --timeout=3s --start-period=15s \
   CMD curl -f http://localhost:8000/health-check || exit 1
