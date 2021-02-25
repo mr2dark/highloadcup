@@ -17,18 +17,21 @@ DEPTH = 10
 
 
 class WrongCoordinatesProblem(cex.ProblemException, wex.BadRequest):
-    def __init__(self, title=None, detail=None, typ=None, instance=None, headers=None):
-        super().__init__(422, title, detail, typ, instance, headers, ext={"code": 1000})
+    def __init__(self, title=None, detail=None, typ=None, instance=None, headers=None, message=""):
+        super().__init__(422, title, detail, typ, instance, headers,
+                         ext={"code": 1000, "message": f"wrong coordinates: {message}"})
 
 
 class WrongDepthProblem(cex.ProblemException, wex.BadRequest):
-    def __init__(self, title=None, detail=None, typ=None, instance=None, headers=None):
-        super().__init__(422, title, detail, typ, instance, headers, ext={"code": 1001})
+    def __init__(self, title=None, detail=None, typ=None, instance=None, headers=None, message=""):
+        super().__init__(422, title, detail, typ, instance, headers,
+                         ext={"code": 1001, "message": f"wrong depth: {message}"})
 
 
 class NoMoreActiveLicensesAllowedProblem(cex.ProblemException, wex.BadRequest):
     def __init__(self, title=None, detail=None, typ=None, instance=None, headers=None):
-        super().__init__(409, title, detail, typ, instance, headers, ext={"code": 1002})
+        super().__init__(409, title, detail, typ, instance, headers,
+                         ext={"code": 1002, "message": "no more active licenses allowed"})
 
 
 class TreasureIsNotDiggedProblem(cex.ProblemException, wex.BadRequest):
@@ -212,6 +215,10 @@ class World:
         return Report(area=area, amount=amount)
 
     def dig(self, dig: Dig):
+        license_id = dig.license_id
+        if license_id not in self._active_licenses:
+            raise WrongLicenseProblem()
+
         x = dig.pos_x
         if not (0 <= x < WIDTH):
             raise WrongCoordinatesProblem()
@@ -220,16 +227,12 @@ class World:
             raise WrongCoordinatesProblem()
         depth = dig.depth
         if not (1 <= depth <= DEPTH):
-            raise WrongDepthProblem()
-        if depth - 1 != self._depth_map[x, y]:
-            raise WrongDepthProblem()
-
-        license_id = dig.license_id
-        if license_id not in self._active_licenses:
-            raise WrongLicenseProblem()
+            raise WrongCoordinatesProblem(message=f"depth={depth} > {DEPTH}")
+        expected_depth = int(self._depth_map[x, y] + 1)
+        if depth != expected_depth:
+            raise WrongDepthProblem(message=f"{depth} (should be {expected_depth})")
 
         self._stats.digs_done += 1
-
         self._depth_map[x, y] += 1
         value = int(self._treasure_map[x, y, depth - 1])
 
@@ -238,8 +241,6 @@ class World:
         self._logger.debug("Licenses state: %s", str(self._active_licenses))
         if license_params[0] >= license_params[1]:
             del self._active_licenses[license_id]
-
-        del license_params
 
         if not value:
             raise NoTreasureProblem()
