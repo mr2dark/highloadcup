@@ -93,6 +93,7 @@ class World:
 
     def get_world_report(self):
         with_treasure = (self._treasure_map > 0)
+        points_with_treasure = with_treasure.any(axis=-1)
         total_treasures = with_treasure.sum()
         total_treasure_value = self._treasure_map.sum()
         outlines = [
@@ -102,6 +103,7 @@ class World:
             f"Total treasures:\t{int(total_treasures)}",
             f"Total treasure value:\t{int(total_treasure_value)}",
             f"Avg treasure value:\t{total_treasure_value / total_treasures :.2f}",
+            f"Points with treasure density:\t{points_with_treasure.mean():.5f}",
             f"Treasure density:\t{with_treasure.mean():.5f}",
             f"Treasure value density:\t{self._treasure_map.mean():.5f}",
             "* LAYER STATS *",
@@ -136,9 +138,9 @@ class World:
             f"Licenses active:\t{len(self._active_licenses)}",
             f"Free licenses issued:\t{self._stats.free_licenses_issued}",
             f"Paid licenses issued:\t{self._stats.paid_licenses_issued}",
-            f"Single cell explores done:\t{self._stats.single_cell_explores_done}",
-            f"Single cell explores with treasures found:\t{self._stats.single_cell_explores_nonzero}",
-            f"Single cell explore treasure found rate:\t" +
+            f"Single point explores done:\t{self._stats.single_cell_explores_done}",
+            f"Single point explores with treasures found:\t{self._stats.single_cell_explores_nonzero}",
+            f"Single point explore treasure found rate:\t" +
             (
                 f"{self._stats.single_cell_explores_nonzero / self._stats.single_cell_explores_done:.5f}"
                 if self._stats.single_cell_explores_done else "N/A"
