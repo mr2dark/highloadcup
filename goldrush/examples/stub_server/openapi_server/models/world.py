@@ -80,6 +80,8 @@ class World:
         self._depth_map = np.zeros(self._map_size)
         self._generate_treasure_map()
 
+        self._treasure_counts = (self._treasure_map > 0).sum(axis=-1)
+
         self._treasure_registry = {}
         self._treasure_503_registry = set()
         self._active_licenses = {}
@@ -206,10 +208,9 @@ class World:
         if not (0 < y_upto <= HEIGHT):
             raise WrongCoordinatesProblem()
 
-        cube = self._treasure_map[x_from:x_upto, y_from:y_upto, :]
-        with_treasure = cube > 0
+        area_counts = self._treasure_counts[x_from:x_upto, y_from:y_upto]
 
-        amount = int(with_treasure.sum())
+        amount = int(area_counts.sum())
         if area.size_x * area.size_y == 1:
             self._stats.single_cell_explores_done += 1
             if amount:
@@ -256,6 +257,7 @@ class World:
         if draw < 0.15:
             self._treasure_503_registry.add(treasure_uuid)
         self._treasure_map[x, y, depth - 1] = 0
+        self._treasure_counts[x, y] -= 1
 
         treasure_list = [treasure_uuid]
 
