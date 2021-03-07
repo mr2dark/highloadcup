@@ -177,8 +177,8 @@ class World:
         return self._balance
 
     def _generate_treasure_map(self):
-        densities = [489024. / WIDTH / HEIGHT / DEPTH] * DEPTH
-        max_cash_size = (np.arange(DEPTH) + 1) * (DEPTH * 38.86 * 2 / 55)
+        densities = [490000. / WIDTH / HEIGHT / DEPTH] * DEPTH
+        max_cash_size = (np.arange(DEPTH) + 1) * (DEPTH * 47 * 2 / 55)
 
         layers = []
 
