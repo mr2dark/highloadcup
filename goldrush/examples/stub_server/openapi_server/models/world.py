@@ -44,14 +44,23 @@ class NoTreasureProblem(cex.ProblemException, wex.BadRequest):
         super().__init__(404, title, detail, typ, instance, headers)
 
 
-class WrongLicenseProblem(cex.ProblemException, wex.BadRequest):
-    def __init__(self, title=None, detail=None, typ=None, instance=None, headers=None):
-        super().__init__(403, title, detail, typ, instance, headers)
+class InvalidLicenseProblem(cex.ProblemException, wex.BadRequest):
+    def __init__(self, license_id, title=None, detail=None, typ=None, instance=None, headers=None):
+        super().__init__(403, title, detail, typ, instance, headers,
+                         ext={"code": 403, "message": f"invalid license: license_id=f{license_id}"})
+
+
+class InvalidPaymentProblem(cex.ProblemException, wex.BadRequest):
+    def __init__(self, invalid_coins, title=None, detail=None, typ=None, instance=None, headers=None):
+        super().__init__(403, title, detail, typ, instance, headers,
+                         ext={"code": 403, "message": f"invalid payments: invalid_coins={', '.join(invalid_coins)}"})
 
 
 class ClientStats:
     free_licenses_issued: int = 0
     paid_licenses_issued: int = 0
+    paid_licenses_expenses: int = 0
+    paid_licenses_digs_allowed: int = 0
     single_cell_explores_done: int = 0
     single_cell_explores_nonzero: int = 0
     digs_done: int = 0
@@ -87,7 +96,6 @@ class World:
         self._active_licenses = {}
         self._next_free_license_after = 0.
 
-        self._balance = 0
         self._coins = set()
         self._next_coin = 0
 
@@ -136,10 +144,16 @@ class World:
     def get_client_report(self):
         outlines = [
             "*** CLIENT REPORT ***",
-            f"Balance:\t{self._balance}",
+            f"Balance:\t{len(self._coins)}",
             f"Licenses active:\t{len(self._active_licenses)}",
             f"Free licenses issued:\t{self._stats.free_licenses_issued}",
             f"Paid licenses issued:\t{self._stats.paid_licenses_issued}",
+            f"Paid license expenses:\t{self._stats.paid_licenses_expenses}",
+            f"Digs allowed by a paid license per coin spent:\t" +
+            (
+                f"{self._stats.paid_licenses_digs_allowed / self._stats.paid_licenses_expenses:.5f}"
+                if self._stats.paid_licenses_expenses else "N/A"
+            ),
             f"Single point explores done:\t{self._stats.single_cell_explores_done}",
             f"Single point explores with treasures found:\t{self._stats.single_cell_explores_nonzero}",
             f"Single point explore treasure found rate:\t" +
@@ -174,7 +188,7 @@ class World:
 
     @property
     def balance(self):
-        return self._balance
+        return len(self._coins)
 
     def _generate_treasure_map(self):
         densities = [490000. / WIDTH / HEIGHT / DEPTH] * DEPTH
@@ -220,7 +234,7 @@ class World:
     def dig(self, dig: Dig):
         license_id = dig.license_id
         if license_id not in self._active_licenses:
-            raise WrongLicenseProblem()
+            raise InvalidLicenseProblem(license_id)
 
         x = dig.pos_x
         if not (0 <= x < WIDTH):
@@ -281,7 +295,6 @@ class World:
         wallet = wallet_coins
 
         del self._treasure_registry[treasure_uuid]
-        self._balance += value
         self._stats.treasures_exchanged += 1
         self._stats.total_exchanged_treasure_value += value
 
@@ -295,7 +308,7 @@ class World:
 
     def report_balance(self):
         wallet_coins = list(take_no_more_from(self._coins, 1000))
-        return Balance(balance=self._balance, wallet=wallet_coins)
+        return Balance(balance=len(self._coins), wallet=wallet_coins)
 
     def _issue_new_license(self, dig_allowed):
         license_id = max(self._active_licenses.keys(), default=0) + 1
@@ -304,11 +317,11 @@ class World:
 
         return License(id=license_id, dig_allowed=dig_allowed, dig_used=0)
 
-    def issue_license(self, coins: List[int]):
+    def issue_license(self, payment_coins: List[int]):
         if len(self._active_licenses) >= MAX_LICENSES:
             raise NoMoreActiveLicensesAllowedProblem()
 
-        if not coins:
+        if not payment_coins:
             cur_time = time.time()
             if cur_time < self._next_free_license_after:
                 draw = self._rng.random()
@@ -319,12 +332,29 @@ class World:
             self._stats.free_licenses_issued += 1
             return self._issue_new_license(3)
 
-        coin = coins[0]
+        coins_amount = len(payment_coins)
+        payment_coins = set(payment_coins)
+        payment = len(payment_coins)
+        invalid_payment_coins = payment_coins - self._coins
 
-        if coin not in self._coins:
-            raise wex.NotFound()
+        if invalid_payment_coins:
+            raise InvalidPaymentProblem(invalid_payment_coins)
 
-        self._coins.remove(coin)
-        self._balance -= 1
+        if payment != coins_amount:
+            self._logger.warning("Duplicate coins in a payment")
+        self._coins.difference_update(payment_coins)
         self._stats.paid_licenses_issued += 1
-        return self._issue_new_license(5)
+        self._stats.paid_licenses_expenses += payment
+
+        if 1 <= payment <= 5:
+            digs_allowed = 5
+        elif 6 <= payment <= 10:
+            digs_allowed = 10
+        elif 11 <= payment <= 20:
+            digs_allowed = int(self._rng.integers(20, 29, endpoint=True))
+        elif 21 <= payment:
+            digs_allowed = int(self._rng.integers(40, 49, endpoint=True))
+        else:
+            raise ValueError(f"Unsupported payment size: {payment}")
+        self._stats.paid_licenses_digs_allowed += digs_allowed
+        return self._issue_new_license(digs_allowed)
