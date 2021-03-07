@@ -8,10 +8,12 @@ is an example of building a OpenAPI-enabled Flask server.
 This example uses the [Connexion](https://github.com/zalando/connexion) library on top of Flask.
 
 ## Requirements
-Python 3.6+
+Python 3.7+
 
 ## Usage
-To run the server, please execute the following from the root directory:
+Please note that the best way to run server is within a container. Please see the [Running with Docker](#running-with-docker) section.
+
+To run the server locally, please execute the following from the root directory:
 
 ```
 pip3 install -r requirements.txt
@@ -90,7 +92,7 @@ docker run --rm -it -e SERVER_RUN_TIME_IN_SECONDS=120 -p 0.0.0.0:8000:8000 hlc21
 
 There's an example Docker Compose file located in the sample client's folder: [docker-compose.yaml](../python/docker-compose.yaml).
 You can copy it to your client's folder, tailor it (adjust the client container image name and relative paths) and run 
-both the stub server and your client in one go using the following command:
+both the stub server and your client as a single step, using the following command:
 ```bash
 docker compose down && docker compose build && docker compose up
 ```
