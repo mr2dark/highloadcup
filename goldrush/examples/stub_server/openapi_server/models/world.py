@@ -50,10 +50,10 @@ class InvalidLicenseProblem(cex.ProblemException, wex.BadRequest):
                          ext={"code": 403, "message": f"invalid license: license_id=f{license_id}"})
 
 
-class InvalidPaymentProblem(cex.ProblemException, wex.BadRequest):
+class BogusPaymentProblem(cex.ProblemException, wex.BadRequest):
     def __init__(self, invalid_coins, title=None, detail=None, typ=None, instance=None, headers=None):
-        super().__init__(403, title, detail, typ, instance, headers,
-                         ext={"code": 403, "message": f"invalid payments: invalid_coins={', '.join(invalid_coins)}"})
+        super().__init__(402, title, detail, typ, instance, headers,
+                         ext={"code": 402, "message": f"bogus coin: {', '.join(sorted(map(str, invalid_coins)))}"})
 
 
 class ClientStats:
@@ -338,7 +338,7 @@ class World:
         invalid_payment_coins = payment_coins - self._coins
 
         if invalid_payment_coins:
-            raise InvalidPaymentProblem(invalid_payment_coins)
+            raise BogusPaymentProblem(invalid_payment_coins)
 
         if payment != coins_amount:
             self._logger.warning("Duplicate coins in a payment")
